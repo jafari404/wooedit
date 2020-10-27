@@ -79,7 +79,9 @@ class WC_Meta_Box_Order_Actions {
 					// //echo $user->roles[0];
 					$page = get_page( $page_id );
 						if ($page->post_status == 'wc-completed') {
-					    echo "Order completed"; 
+					    echo "";?> 
+					    	<div class="order_completed">Order Completed</div>
+					    <?php  
 
 					$user = wp_get_current_user();
 							if($user->roles[0] == 'shop_manager'){
