@@ -48,7 +48,14 @@ if ( ! function_exists( 'alg_get_custom_order_statuses' ) ) {
 			}
 			$custom_order_statuses = $custom_order_statuses_no_prefix;
 		}
-		return $custom_order_statuses;
+		
+		$user = wp_get_current_user();
+		if($user->roles[0] == 'shop_manager'){
+			$test = array();
+			return $test ;
+		}else{
+			return $custom_order_statuses;
+		}
 	}
 }
 
