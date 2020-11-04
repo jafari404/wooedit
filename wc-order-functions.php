@@ -113,7 +113,9 @@ function wc_get_order_statuses() {
 			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
 			'wc-refunded'   => _x( 'Refunded', 'Order status', 'woocommerce' ),
 			'wc-failed'     => _x( 'Failed', 'Order status', 'woocommerce' ),
+			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),
 		);
+
 	}
 	
 	return apply_filters( 'wc_order_statuses', $order_statuses );
