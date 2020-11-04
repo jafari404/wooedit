@@ -44,16 +44,18 @@ class WC_Meta_Box_Order_Actions {
 		<ul class="order_actions submitbox">
 
 			<?php do_action( 'woocommerce_order_actions_start', $post->ID ); ?>
-
-			<li class="wide" id="actions">
-				<select name="wc_order_action">
+<!-- Disable Order Actions Start_ej -->
+<!--			<li class="wide" id="actions">
+ 				<select name="wc_order_action">
 					<option value=""><?php esc_html_e( 'Choose an action...', 'woocommerce' ); ?></option>
 					<?php foreach ( $order_actions as $action => $title ) { ?>
 						<option value="<?php echo esc_attr( $action ); ?>"><?php echo esc_html( $title ); ?></option>
 					<?php } ?>
-				</select>
+				</select> 
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
 			</li>
+		-->
+<!-- Disable Order Actions END -->		
 
 			<li class="wide">
 				<div id="delete-action">
@@ -71,13 +73,28 @@ class WC_Meta_Box_Order_Actions {
 					}
 					?>
 				</div>
+				<!-- Disable post update -> Completed order Start_ej  -->
+				<?php 
+					// $current_post_status = get_post_status();
+					// //echo $user->roles[0];
+					$page = get_page( $page_id );
+					$user = wp_get_current_user();
+						if ( (($page->post_status == 'wc-completed') or ($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
+						    <div class="order_completed">limit access</div>
+							<button type="" disabled="disabled" class="button save_order button-primary" name="save" value=""><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button> 
+						<?php }else{ ?>
+							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
+						<?php
+						}
+						?>
+				<!-- Disable post update -> Completed order End  -->
 
-				<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
 			</li>
 
 			<?php do_action( 'woocommerce_order_actions_end', $post->ID ); ?>
 
 		</ul>
+
 		<?php
 	}
 
