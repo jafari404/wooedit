@@ -75,15 +75,30 @@ class WC_Meta_Box_Order_Actions {
 				</div>
 				<!-- Disable post update -> Completed order Start_ej  -->
 				<?php 
-					// $current_post_status = get_post_status();
+					$current_post_status = get_post_status();
 					// //echo $user->roles[0];
 					$page = get_page( $page_id );
 					$user = wp_get_current_user();
-						if ( (($page->post_status == 'wc-completed') or ($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
+						if ($page->post_status == 'wc-completed') { ?> 
 						    <div class="order_completed">limit access</div>
-							<button type="" disabled="disabled" class="button save_order button-primary" name="save" value=""><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button> 
-						<?php }else{ ?>
-							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
+						<?php }
+						if ( (($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
+						    <div class="order_completed">limit access</div>
+						    <div style="width: 50%; ">
+						    	<?php echo $current_post_status; ?>
+						    </div>						    
+						<?php }
+						if ( ($user->roles[0] == 'anbardar') ) { ?> 
+						    <div class="order_completed">آقای صفری مجوز دسترسی ندارید </div>
+						    <div style="width: 50%; ">
+						    	<?php echo $current_post_status; ?>
+						    </div>						    
+						<?php }						
+						else{ ?>
+							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button><br>
+						    <div style="width: 50%; ">
+						    	<?php echo $current_post_status; ?>
+						    </div>							
 						<?php
 						}
 						?>
