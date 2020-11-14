@@ -82,13 +82,13 @@ class WC_Meta_Box_Order_Actions {
 						if ($page->post_status == 'wc-completed') { ?> 
 						    <div class="order_completed">limit access</div>
 						<?php }
-						if ( (($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
+						elseif ( (($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
 						    <div class="order_completed">limit access</div>
 						    <div style="width: 50%; ">
 						    	<?php echo $current_post_status; ?>
 						    </div>						    
 						<?php }
-						if ( ($user->roles[0] == 'anbardar') ) { ?> 
+						elseif ( ($user->roles[0] == 'anbardar') ) { ?> 
 						    <div class="order_completed">آقای صفری مجوز دسترسی ندارید </div>
 						    <div style="width: 50%; ">
 						    	<?php echo $current_post_status; ?>
