@@ -46,16 +46,16 @@ class WC_Meta_Box_Order_Actions {
 			<?php do_action( 'woocommerce_order_actions_start', $post->ID ); ?>
 <!-- Disable Order Actions Start_ej -->
 <!--			<li class="wide" id="actions">
- 				<select name="wc_order_action">
+				<select name="wc_order_action">
 					<option value=""><?php esc_html_e( 'Choose an action...', 'woocommerce' ); ?></option>
 					<?php foreach ( $order_actions as $action => $title ) { ?>
 						<option value="<?php echo esc_attr( $action ); ?>"><?php echo esc_html( $title ); ?></option>
 					<?php } ?>
-				</select> 
+				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
 			</li>
-		-->
-<!-- Disable Order Actions END -->		
+-->
+<!-- Disable Order Actions END -->
 
 			<li class="wide">
 				<div id="delete-action">
@@ -89,7 +89,7 @@ class WC_Meta_Box_Order_Actions {
 						    </div>						    
 						<?php }
 						elseif ( ($user->roles[0] == 'anbardar') ) { ?> 
-						    <div class="order_completed">آقای صفری مجوز دسترسی ندارید </div>
+						    <div class="order_completed"> مجوز دسترسی ندارید </div>
 						    <div style="width: 50%; ">
 						    	<?php echo $current_post_status; ?>
 						    </div>						    
@@ -107,9 +107,7 @@ class WC_Meta_Box_Order_Actions {
 			</li>
 
 			<?php do_action( 'woocommerce_order_actions_end', $post->ID ); ?>
-
 		</ul>
-
 		<?php
 	}
 
@@ -150,7 +148,9 @@ class WC_Meta_Box_Order_Actions {
 
 				WC()->payment_gateways();
 				WC()->shipping();
-				WC()->mailer()->emails['WC_Email_New_Order']->trigger( $order->get_id(), $order );
+				add_filter( 'woocommerce_new_order_email_allows_resend', '__return_true' );
+				WC()->mailer()->emails['WC_Email_New_Order']->trigger( $order->get_id(), $order, true );
+				remove_filter( 'woocommerce_new_order_email_allows_resend', '__return_true' );
 
 				do_action( 'woocommerce_after_resend_order_email', $order, 'new_order' );
 
