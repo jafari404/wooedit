@@ -44,22 +44,27 @@ wp_enqueue_script( 'post' );
 $_wp_editor_expand   = false;
 $_content_editor_dfw = false;
 
-/**
- * Filters whether to enable the 'expand' functionality in the post editor.
- *
- * @since 4.0.0
- * @since 4.1.0 Added the `$post_type` parameter.
- *
- * @param bool   $expand    Whether to enable the 'expand' functionality. Default true.
- * @param string $post_type Post type.
- */
-if ( post_type_supports( $post_type, 'editor' ) && ! wp_is_mobile() &&
-	! ( $is_IE && preg_match( '/MSIE [5678]/', $_SERVER['HTTP_USER_AGENT'] ) ) &&
-	apply_filters( 'wp_editor_expand', true, $post_type ) ) {
+if ( post_type_supports( $post_type, 'editor' )
+	&& ! wp_is_mobile()
+	&& ! ( $is_IE && preg_match( '/MSIE [5678]/', $_SERVER['HTTP_USER_AGENT'] ) )
+) {
+	/**
+	 * Filters whether to enable the 'expand' functionality in the post editor.
+	 *
+	 * @since 4.0.0
+	 * @since 4.1.0 Added the `$post_type` parameter.
+	 *
+	 * @param bool   $expand    Whether to enable the 'expand' functionality. Default true.
+	 * @param string $post_type Post type.
+	 */
+																	  
+																			  
+	if ( apply_filters( 'wp_editor_expand', true, $post_type ) ) {
 
-	wp_enqueue_script( 'editor-expand' );
-	$_content_editor_dfw = true;
-	$_wp_editor_expand   = ( 'on' === get_user_setting( 'editor_expand', 'on' ) );
+		wp_enqueue_script( 'editor-expand' );
+		$_content_editor_dfw = true;
+		$_wp_editor_expand   = ( 'on' === get_user_setting( 'editor_expand', 'on' ) );
+	}
 }
 
 if ( wp_is_mobile() ) {
@@ -169,9 +174,9 @@ if ( $viewable ) {
 $scheduled_date = sprintf(
 	/* translators: Publish box date string. 1: Date, 2: Time. */
 	__( '%1$s at %2$s' ),
-	/* translators: Publish box date format, see https://www.php.net/date */
+	/* translators: Publish box date format, see https://www.php.net/manual/datetime.format.php */
 	date_i18n( _x( 'M j, Y', 'publish box date format' ), strtotime( $post->post_date ) ),
-	/* translators: Publish box time format, see https://www.php.net/date */
+	/* translators: Publish box time format, see https://www.php.net/manual/datetime.format.php */
 	date_i18n( _x( 'H:i', 'publish box time format' ), strtotime( $post->post_date ) )
 );
 
@@ -431,12 +436,13 @@ echo esc_html( $title );
 </h1>
 
 <?php
-var_dump($post);
+				
 if ( isset( $post_new_file ) && current_user_can( $post_type_object->cap->create_posts ) ) {
 	echo ' <a href="' . esc_url( admin_url( $post_new_file ) ) . '" class="page-title-action">' . esc_html( $post_type_object->labels->add_new ) . '</a>';
 }
 //var_dump($post->post_status);
- //["post_status"]=> string(12) "wc-completed"
+//["post_status"]=> string(12) "wc-completed"							   
+											  
 ?>
 
 <hr class="wp-header-end">
