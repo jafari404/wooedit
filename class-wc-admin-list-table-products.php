@@ -15,7 +15,7 @@ if ( class_exists( 'WC_Admin_List_Table_Products', false ) ) {
 }
 
 if ( ! class_exists( 'WC_Admin_List_Table', false ) ) {
-	include_once 'abstract-class-wc-admin-list-table.php';
+	include_once __DIR__ . '/abstract-class-wc-admin-list-table.php';
 }
 
 /**
@@ -125,7 +125,7 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 		}
 
 		$show_columns['price']       = __( 'Price', 'woocommerce' );
-		$show_columns['author']			  = __( 'Author', 'woocommerce' );		
+		$show_columns['author']			  = __( 'Author', 'woocommerce' );
 		$show_columns['product_cat'] = __( 'Categories', 'woocommerce' );
 		$show_columns['product_tag'] = __( 'Tags', 'woocommerce' );
 		$show_columns['featured']    = '<span class="wc-featured parent-tips" data-tip="' . esc_attr__( 'Featured', 'woocommerce' ) . '">' . __( 'Featured', 'woocommerce' ) . '</span>';
@@ -418,7 +418,7 @@ class WC_Admin_List_Table_Products extends WC_Admin_List_Table {
 		unset( $views['mine'] );
 
 		// Add sorting link.
-		if ( current_user_can( 'edit_others_pages' ) ) {
+		if ( current_user_can( 'edit_others_products' ) ) {
 			$class            = ( isset( $wp_query->query['orderby'] ) && 'menu_order title' === $wp_query->query['orderby'] ) ? 'current' : '';
 			$query_string     = remove_query_arg( array( 'orderby', 'order' ) );
 			$query_string     = add_query_arg( 'orderby', rawurlencode( 'menu_order title' ), $query_string );
