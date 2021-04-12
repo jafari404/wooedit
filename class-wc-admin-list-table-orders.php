@@ -125,8 +125,6 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 		$show_columns['shipping_address'] = __( 'Ship to', 'woocommerce' );
 		$show_columns['order_total']      = __( 'Total', 'woocommerce' );
 		$show_columns['wc_actions']       = __( 'Actions', 'woocommerce' );
-
-
 		wp_enqueue_script( 'wc-orders' );
 
 		return $show_columns;
