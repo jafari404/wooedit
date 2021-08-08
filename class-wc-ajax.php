@@ -149,7 +149,7 @@ class WC_AJAX {
 			'save_order_items',
 			'load_order_items',
 			'add_order_note',
-			'delete_order_note',
+			//'delete_order_note',
 			'json_search_products',
 			'json_search_products_and_variations',
 			'json_search_downloadable_products_and_variations',
@@ -1499,7 +1499,7 @@ class WC_AJAX {
 						printf( ' ' . esc_html__( 'by %s', 'woocommerce' ), esc_html( $note->added_by ) );
 					endif;
 					?>
-					<a href="#" class="delete_note" role="button"><?php //esc_html_e( 'Delete note', 'woocommerce' ); ?></a>
+					<a href="#" class="delete_note" role="button"><?php esc_html_e( 'Delete note', 'woocommerce' ); ?></a>
 				</p>
 			</li>
 			<?php
