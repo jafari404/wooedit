@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
 						echo esc_html( sprintf( ' ' . __( 'by %s', 'woocommerce' ), $note->added_by ) );
 					endif;
 					?>
-					<a href="#" class="delete_note" role="button"><?php esc_html_e( 'Delete note', 'woocommerce' ); ?></a>
+					<a href="#" class="delete_note" role="button"><?php //esc_html_e( 'Delete note', 'woocommerce' ); ?></a>
 				</p>
 			</li>
 			<?php
