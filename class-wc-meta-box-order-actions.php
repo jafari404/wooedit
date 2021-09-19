@@ -45,7 +45,7 @@ class WC_Meta_Box_Order_Actions {
 
 			<?php do_action( 'woocommerce_order_actions_start', $post->ID ); ?>
 <!-- Disable Order Actions Start_ej -->
-<!--			<li class="wide" id="actions">
+			<li class="wide" id="actions">
 				<select name="wc_order_action">
 					<option value=""><?php esc_html_e( 'Choose an action...', 'woocommerce' ); ?></option>
 					<?php foreach ( $order_actions as $action => $title ) { ?>
@@ -54,7 +54,6 @@ class WC_Meta_Box_Order_Actions {
 				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
 			</li>
--->
 <!-- Disable Order Actions END -->
 
 			<li class="wide">
@@ -73,22 +72,22 @@ class WC_Meta_Box_Order_Actions {
 					}
 					?>
 				</div>
-				<!-- Disable post update -> Completed order Start_ej  -->
+<!-- Disable post update -> Completed order Start_ej  -->
 				<?php 
 					$current_post_status = get_post_status();
-					// //echo $user->roles[0];
+					//echo $user->roles[0];
 					$page = get_page( $page_id );
 					$user = wp_get_current_user();
 						if ($page->post_status == 'wc-completed') { ?> 
 						    <div class="order_completed">limit access</div>
 						<?php }
-						elseif ( (($page->post_status == 'wc-on-nas')) AND ($user->roles[0] == 'shop_manager') ) { ?> 
+						elseif ( (($page->post_status == 'wc-on-nas')) AND (in_array('shop_manager', $user->roles)) ) { ?> 
 						    <div class="order_completed">limit access</div>
 						    <div style="width: 50%; ">
 						    	<?php echo $current_post_status; ?>
 						    </div>						    
 						<?php }
-						elseif ( ($user->roles[0] == 'anbardar') ) { ?> 
+						elseif (in_array('storekeeper', $user->roles)) { ?> 
 						    <div class="order_completed"> مجوز دسترسی ندارید </div>
 						    <div style="width: 50%; ">
 						    	<?php echo $current_post_status; ?>
@@ -104,9 +103,11 @@ class WC_Meta_Box_Order_Actions {
 						?>
 				<!-- Disable post update -> Completed order End  -->
 
+				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button> -->
 			</li>
 
 			<?php do_action( 'woocommerce_order_actions_end', $post->ID ); ?>
+
 		</ul>
 		<?php
 	}
