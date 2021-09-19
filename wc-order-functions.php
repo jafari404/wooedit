@@ -71,7 +71,7 @@ function wc_get_orders( $args ) {
  *
  * @since  2.2
  *
- * @param  mixed $the_order Post object or post ID of the order.
+ * @param mixed $the_order       Post object or post ID of the order.
  *
  * @return bool|WC_Order|WC_Order_Refund
  */
@@ -111,9 +111,7 @@ function wc_get_order_statuses() {
 			'wc-failed'     => _x( 'Failed', 'Order status', 'woocommerce' ),
 			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),
 		);
-
 	}
-
 	return apply_filters( 'wc_order_statuses', $order_statuses );
 }
 // Order Statuses By User Roles END
@@ -381,9 +379,10 @@ function wc_orders_count( $status ) {
  * @param  int|WC_Product $product     Product instance or ID.
  * @param  WC_Order       $order       Order data.
  * @param  int            $qty         Quantity purchased.
+ * @param  WC_Order_Item  $item        Item of the order.
  * @return int|bool insert id or false on failure.
  */
-function wc_downloadable_file_permission( $download_id, $product, $order, $qty = 1 ) {
+function wc_downloadable_file_permission( $download_id, $product, $order, $qty = 1, $item = null ) {
 	if ( is_numeric( $product ) ) {
 		$product = wc_get_product( $product );
 	}
@@ -405,7 +404,7 @@ function wc_downloadable_file_permission( $download_id, $product, $order, $qty =
 		$download->set_access_expires( strtotime( $from_date . ' + ' . $expiry . ' DAY' ) );
 	}
 
-	$download = apply_filters( 'woocommerce_downloadable_file_permission', $download, $product, $order, $qty );
+	$download = apply_filters( 'woocommerce_downloadable_file_permission', $download, $product, $order, $qty, $item );
 
 	return $download->save();
 }
@@ -435,7 +434,7 @@ function wc_downloadable_product_permissions( $order_id, $force = false ) {
 				$downloads = $product->get_downloads();
 
 				foreach ( array_keys( $downloads ) as $download_id ) {
-					wc_downloadable_file_permission( $download_id, $product, $order, $item->get_quantity() );
+					wc_downloadable_file_permission( $download_id, $product, $order, $item->get_quantity(), $item );
 				}
 			}
 		}
@@ -471,11 +470,12 @@ function wc_delete_shop_order_transients( $order = 0 ) {
 		delete_transient( $transient );
 	}
 
-	// Clear money spent for user associated with order.
+	// Clear customer's order related caches.
 	if ( is_a( $order, 'WC_Order' ) ) {
 		$order_id = $order->get_id();
 		delete_user_meta( $order->get_customer_id(), '_money_spent' );
 		delete_user_meta( $order->get_customer_id(), '_order_count' );
+		delete_user_meta( $order->get_customer_id(), '_last_order' );
 	} else {
 		$order_id = 0;
 	}
@@ -713,9 +713,10 @@ function wc_restock_refunded_items( $order, $refunded_line_items ) {
 		if ( ! isset( $refunded_line_items[ $item_id ], $refunded_line_items[ $item_id ]['qty'] ) ) {
 			continue;
 		}
-		$product            = $item->get_product();
-		$item_stock_reduced = $item->get_meta( '_reduced_stock', true );
-		$qty_to_refund      = $refunded_line_items[ $item_id ]['qty'];
+		$product				= $item->get_product();
+		$item_stock_reduced		= $item->get_meta( '_reduced_stock', true );
+		$restock_refunded_items = (int) $item->get_meta( '_restock_refunded_items', true );
+		$qty_to_refund			= $refunded_line_items[ $item_id ]['qty'];
 
 		if ( ! $item_stock_reduced || ! $qty_to_refund || ! $product || ! $product->managing_stock() ) {
 			continue;
@@ -728,9 +729,14 @@ function wc_restock_refunded_items( $order, $refunded_line_items ) {
 		$item_stock_reduced = $item_stock_reduced - $qty_to_refund;
 
 		if ( 0 < $item_stock_reduced ) {
+			// Keeps track of total running tally of reduced stock.
 			$item->update_meta_data( '_reduced_stock', $item_stock_reduced );
+
+			// Keeps track of only refunded items that needs restock.
+			$item->update_meta_data( '_restock_refunded_items', $qty_to_refund + $restock_refunded_items );
 		} else {
 			$item->delete_meta_data( '_reduced_stock' );
+			$item->delete_meta_data( '_restock_refunded_items' );
 		}
 
 		/* translators: 1: product ID 2: old stock level 3: new stock level */
@@ -939,7 +945,8 @@ function wc_cancel_unpaid_orders() {
 		}
 	}
 	wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
-	wp_schedule_single_event( time() + ( absint( $held_duration ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
+	$cancel_unpaid_interval = apply_filters( 'woocommerce_cancel_unpaid_orders_interval_minutes', absint( $held_duration ) );
+	wp_schedule_single_event( time() + ( absint( $cancel_unpaid_interval ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
 }
 add_action( 'woocommerce_cancel_unpaid_orders', 'wc_cancel_unpaid_orders' );
 
