@@ -17,6 +17,7 @@ if ( class_exists( 'WC_Admin_List_Table_Orders', false ) ) {
 if ( ! class_exists( 'WC_Admin_List_Table', false ) ) {
 	include_once __DIR__ . '/abstract-class-wc-admin-list-table.php';
 }
+
 /**
  * WC_Admin_List_Table_Orders Class.
  */
@@ -125,6 +126,7 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 		$show_columns['shipping_address'] = __( 'Ship to', 'woocommerce' );
 		$show_columns['order_total']      = __( 'Total', 'woocommerce' );
 		$show_columns['wc_actions']       = __( 'Actions', 'woocommerce' );
+
 		wp_enqueue_script( 'wc-orders' );
 
 		return $show_columns;
@@ -544,6 +546,7 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 				</tbody>
 			</table>
 		</div>';
+
 		return $html;
 	}
 
