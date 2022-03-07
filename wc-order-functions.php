@@ -90,7 +90,7 @@ function wc_get_order( $the_order = false ) {
  * @used-by WC_Order::set_status
  * @return array
  */
-// Order Statuses By User Roles Start_ej
+// Order Statuses By User Roles Start_ej										
 function wc_get_order_statuses() {
 	$user = wp_get_current_user();
 	if(in_array('shop_manager', $user->roles)){
@@ -98,9 +98,10 @@ function wc_get_order_statuses() {
 			'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
 			'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
 			'wc-on-hold'    => _x( 'On hold', 'Order status', 'woocommerce' ),
-			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),			
+			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
+			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),						
 		);
-	}else{
+	}else{							   
 		$order_statuses = array(
 			'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
 			'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
@@ -114,7 +115,7 @@ function wc_get_order_statuses() {
 	}
 	return apply_filters( 'wc_order_statuses', $order_statuses );
 }
-// Order Statuses By User Roles END
+// Order Statuses By User Roles END								   
 
 /**
  * See if a string is an order status.
@@ -713,10 +714,10 @@ function wc_restock_refunded_items( $order, $refunded_line_items ) {
 		if ( ! isset( $refunded_line_items[ $item_id ], $refunded_line_items[ $item_id ]['qty'] ) ) {
 			continue;
 		}
-		$product				= $item->get_product();
-		$item_stock_reduced		= $item->get_meta( '_reduced_stock', true );
+		$product                = $item->get_product();
+		$item_stock_reduced     = $item->get_meta( '_reduced_stock', true );
 		$restock_refunded_items = (int) $item->get_meta( '_restock_refunded_items', true );
-		$qty_to_refund			= $refunded_line_items[ $item_id ]['qty'];
+		$qty_to_refund          = $refunded_line_items[ $item_id ]['qty'];
 
 		if ( ! $item_stock_reduced || ! $qty_to_refund || ! $product || ! $product->managing_stock() ) {
 			continue;
@@ -728,16 +729,16 @@ function wc_restock_refunded_items( $order, $refunded_line_items ) {
 		// Update _reduced_stock meta to track changes.
 		$item_stock_reduced = $item_stock_reduced - $qty_to_refund;
 
-		if ( 0 < $item_stock_reduced ) {
-			// Keeps track of total running tally of reduced stock.
-			$item->update_meta_data( '_reduced_stock', $item_stock_reduced );
+		if ( 0 < $item_stock_reduced ) {													  
+		// Keeps track of total running tally of reduced stock.
+		$item->update_meta_data( '_reduced_stock', $item_stock_reduced );
 
-			// Keeps track of only refunded items that needs restock.
-			$item->update_meta_data( '_restock_refunded_items', $qty_to_refund + $restock_refunded_items );
+		// Keeps track of only refunded items that needs restock.
+		$item->update_meta_data( '_restock_refunded_items', $qty_to_refund + $restock_refunded_items );
 		} else {
 			$item->delete_meta_data( '_reduced_stock' );
 			$item->delete_meta_data( '_restock_refunded_items' );
-		}
+		}											   
 
 		/* translators: 1: product ID 2: old stock level 3: new stock level */
 		$order->add_order_note( sprintf( __( 'Item #%1$s stock increased from %2$s to %3$s.', 'woocommerce' ), $product->get_id(), $old_stock, $new_stock ) );
@@ -928,6 +929,12 @@ add_action( 'woocommerce_order_status_cancelled', 'wc_update_coupon_usage_counts
 function wc_cancel_unpaid_orders() {
 	$held_duration = get_option( 'woocommerce_hold_stock_minutes' );
 
+	// Re-schedule the event before cancelling orders
+	// this way in case of a DB timeout or (plugin) crash the event is always scheduled for retry.
+	wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
+	$cancel_unpaid_interval = apply_filters( 'woocommerce_cancel_unpaid_orders_interval_minutes', absint( $held_duration ) );
+	wp_schedule_single_event( time() + ( absint( $cancel_unpaid_interval ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
+
 	if ( $held_duration < 1 || 'yes' !== get_option( 'woocommerce_manage_stock' ) ) {
 		return;
 	}
@@ -944,9 +951,6 @@ function wc_cancel_unpaid_orders() {
 			}
 		}
 	}
-	wp_clear_scheduled_hook( 'woocommerce_cancel_unpaid_orders' );
-	$cancel_unpaid_interval = apply_filters( 'woocommerce_cancel_unpaid_orders_interval_minutes', absint( $held_duration ) );
-	wp_schedule_single_event( time() + ( absint( $cancel_unpaid_interval ) * 60 ), 'woocommerce_cancel_unpaid_orders' );
 }
 add_action( 'woocommerce_cancel_unpaid_orders', 'wc_cancel_unpaid_orders' );
 
