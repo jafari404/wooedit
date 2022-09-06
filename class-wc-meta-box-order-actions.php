@@ -207,3 +207,4 @@ class WC_Meta_Box_Order_Actions {
 		return apply_filters( 'woocommerce_order_actions', $actions, $order );
 	}
 }
+ 
