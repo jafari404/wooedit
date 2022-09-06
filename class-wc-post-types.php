@@ -10,6 +10,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
+
 /**
  * Post types Class.
  */
@@ -594,7 +596,15 @@ class WC_Post_Types {
 					'show_in_admin_status_list' => true,
 					/* translators: %s: number of orders */
 					'label_count'               => _n_noop( 'Nesiye <span class="count">(%s)</span>', 'Nesiye <span class="count">(%s)</span>', 'woocommerce' ),
-				),
+	  
+							 
+																					 
+										  
+										  
+										 
+										 
+											
+																																					   
 				'wc-completed'  => array(
 					'label'                     => _x( 'Completed', 'Order status', 'woocommerce' ),
 					'public'                    => false,
