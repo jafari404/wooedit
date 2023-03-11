@@ -47,22 +47,23 @@ class WC_Meta_Box_Order_Actions {
 				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
 			</li>
-<!-- Disable Order Actions END -->
+<!-- Disable Order Actions END -->								  
 
 			<li class="wide">
 				<div id="delete-action">
+					<!-- Disable delete action --Start_ej  -->
 					<?php
-					if ( current_user_can( 'delete_post', $post->ID ) ) {
+					// if ( current_user_can( 'delete_post', $post->ID ) ) {
 
-						if ( ! EMPTY_TRASH_DAYS ) {
-							$delete_text = __( 'Delete permanently', 'woocommerce' );
-						} else {
-							$delete_text = __( 'Move to Trash', 'woocommerce' );
-						}
+						// if ( ! EMPTY_TRASH_DAYS ) {
+							// $delete_text = __( 'Delete permanently', 'woocommerce' );
+						// } else {
+							// $delete_text = __( 'Move to Trash', 'woocommerce' );
+						// }
 						?>
-						<a class="submitdelete deletion" href="<?php echo esc_url( get_delete_post_link( $post->ID ) ); ?>"><?php echo esc_html( $delete_text ); ?></a>
+						// <!-- <a class="submitdelete deletion" href="<?php //echo esc_url( get_delete_post_link( $post->ID ) ); ?>"><?php //echo esc_html( $delete_text ); ?></a> -->
 						<?php
-					}
+					// }
 					?>
 				</div>
 <!-- Disable post update -> Completed order Start_ej  -->
@@ -74,6 +75,11 @@ class WC_Meta_Box_Order_Actions {
 						if ($page->post_status == 'wc-completed') { ?> 
 						    <div class="order_completed">limit access</div>
 						<?php }
+						elseif ($page->post_status == 'wc-semicompleted') { ?> 
+						    <div class="order_completed">limit access Change this</div>
+						<?php }
+
+
 						elseif ( (($page->post_status == 'wc-on-nas')) AND (in_array('shop_manager', $user->roles)) ) { ?> 
 						    <div class="order_completed">limit access</div>
 						    <div style="width: 50%; ">
@@ -96,7 +102,7 @@ class WC_Meta_Box_Order_Actions {
 						?>
 <!-- Disable post update -> Completed order End  -->														 
 
-				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>-->
+				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button> -->
 			</li>
 
 			<?php do_action( 'woocommerce_order_actions_end', $post->ID ); ?>
@@ -207,4 +213,3 @@ class WC_Meta_Box_Order_Actions {
 		return apply_filters( 'woocommerce_order_actions', $actions, $order );
 	}
 }
- 
