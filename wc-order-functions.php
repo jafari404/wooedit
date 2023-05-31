@@ -8,6 +8,9 @@
  * @version 3.4.0
  */
 
+use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
+use Automattic\WooCommerce\Utilities\StringUtil;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -101,7 +104,7 @@ function wc_get_order_statuses() {
 			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
 			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),						
 		);
-	}else{
+	}else{	   
 	$order_statuses = array(
 		'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
 		'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
@@ -113,9 +116,10 @@ function wc_get_order_statuses() {
 		'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),
 	);
 	}
+															  
 	return apply_filters( 'wc_order_statuses', $order_statuses );
 }
-// Order Statuses By User Roles END
+// Order Statuses By User Roles END								   
 
 /**
  * See if a string is an order status.
@@ -249,6 +253,24 @@ function wc_get_order_types( $for = '' ) {
 				}
 			}
 			break;
+		case 'cot-migration':
+			foreach ( $wc_order_types as $type => $args ) {
+				if ( DataSynchronizer::PLACEHOLDER_ORDER_POST_TYPE !== $type ) {
+					$order_types[] = $type;
+				}
+			}
+			break;
+		case 'admin-menu':
+			$order_types = array_intersect(
+				array_keys( $wc_order_types ),
+				get_post_types(
+					array(
+						'show_ui'      => true,
+						'show_in_menu' => 'woocommerce',
+					)
+				)
+			);
+			break;
 		default:
 			$order_types = array_keys( $wc_order_types );
 			break;
@@ -343,25 +365,31 @@ function wc_processing_order_count() {
  * Return the orders count of a specific order status.
  *
  * @param string $status Status.
+ * @param string $type   (Optional) Order type. Leave empty to include all 'for order-count' order types. @{see wc_get_order_types()}.
  * @return int
  */
-function wc_orders_count( $status ) {
-	$count          = 0;
-	$status         = 'wc-' . $status;
-	$order_statuses = array_keys( wc_get_order_statuses() );
+function wc_orders_count( $status, string $type = '' ) {
+	$count           = 0;
+	$legacy_statuses = array( 'draft', 'trash' );
+	$valid_statuses  = array_merge( array_keys( wc_get_order_statuses() ), $legacy_statuses );
+	$status          = ( ! in_array( $status, $legacy_statuses, true ) && 0 !== strpos( $status, 'wc-' ) ) ? 'wc-' . $status : $status;
+	$valid_types     = wc_get_order_types( 'order-count' );
+	$type            = trim( $type );
 
-	if ( ! in_array( $status, $order_statuses, true ) ) {
+	if ( ! in_array( $status, $valid_statuses, true ) || ( $type && ! in_array( $type, $valid_types, true ) ) ) {
 		return 0;
 	}
 
-	$cache_key    = WC_Cache_Helper::get_cache_prefix( 'orders' ) . $status;
+	$cache_key    = WC_Cache_Helper::get_cache_prefix( 'orders' ) . $status . $type;
 	$cached_count = wp_cache_get( $cache_key, 'counts' );
 
 	if ( false !== $cached_count ) {
 		return $cached_count;
 	}
 
-	foreach ( wc_get_order_types( 'order-count' ) as $type ) {
+	$types_for_count = $type ? array( $type ) : $valid_types;
+
+	foreach ( $types_for_count as $type ) {
 		$data_store = WC_Data_Store::load( 'shop_order' === $type ? 'order' : $type );
 		if ( $data_store ) {
 			$count += $data_store->get_order_count( $status );
@@ -647,12 +675,15 @@ function wc_create_refund( $args = array() ) {
 			}
 		}
 
+		$order->set_date_modified( time() );
+		$order->save();
+
 		do_action( 'woocommerce_refund_created', $refund->get_id(), $args );
 		do_action( 'woocommerce_order_refunded', $order->get_id(), $refund->get_id() );
 
 	} catch ( Exception $e ) {
 		if ( isset( $refund ) && is_a( $refund, 'WC_Order_Refund' ) ) {
-			wp_delete_post( $refund->get_id(), true );
+			$refund->delete( true );
 		}
 		return new WP_Error( 'error', $e->getMessage() );
 	}
@@ -739,16 +770,12 @@ function wc_restock_refunded_items( $order, $refunded_line_items ) {
 		// Update _reduced_stock meta to track changes.
 		$item_stock_reduced = $item_stock_reduced - $qty_to_refund;
 
-										  
 		// Keeps track of total running tally of reduced stock.
 		$item->update_meta_data( '_reduced_stock', $item_stock_reduced );
 
 		// Keeps track of only refunded items that needs restock.
 		$item->update_meta_data( '_restock_refunded_items', $qty_to_refund + $restock_refunded_items );
 
-											   
-														
-   
 		/* translators: 1: product ID 2: old stock level 3: new stock level */
 		$restock_note = sprintf( __( 'Item #%1$s stock increased from %2$s to %3$s.', 'woocommerce' ), $product->get_id(), $old_stock, $new_stock );
 
@@ -918,7 +945,7 @@ function wc_update_coupon_usage_counts( $order_id ) {
 
 	if ( count( $order->get_coupon_codes() ) > 0 ) {
 		foreach ( $order->get_coupon_codes() as $code ) {
-			if ( ! $code ) {
+			if ( StringUtil::is_null_or_whitespace( $code ) ) {
 				continue;
 			}
 
