@@ -46,7 +46,7 @@ class WC_Meta_Box_Order_Actions {
 			?>
 <!-- Disable Order Actions Start_ej -->
 
-			<li class="wide" id="actions">
+<!-- 			<li class="wide" id="actions">
 				<select name="wc_order_action">
 					<option value=""><?php esc_html_e( 'Choose an action...', 'woocommerce' ); ?></option>
 					<?php foreach ( $order_actions as $action => $title ) { ?>
@@ -54,8 +54,8 @@ class WC_Meta_Box_Order_Actions {
 					<?php } ?>
 				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
-			</li>
-<!-- Disable Order Actions END -->
+			</li> -->
+<!-- Disable Order Actions END -->						  
 
 			<li class="wide">
 				<div id="delete-action">
@@ -79,14 +79,17 @@ class WC_Meta_Box_Order_Actions {
 					//echo $user->roles[0];
 					$page = get_page( $page_id );
 					$user = wp_get_current_user();
-						if ($page->post_status == 'wc-completed') { ?> 
+						if (in_array('administrator', $user->roles)) { ?> 
+							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
+							<br>
+							Limit access for other roles
+						<?php }						
+						elseif ($page->post_status == 'wc-completed') { ?> 
 						    <div class="order_completed">limit access</div>
 						<?php }
 						elseif ($page->post_status == 'wc-semicompleted') { ?> 
 						    <div class="order_completed">limit access Change this</div>
 						<?php }
-
-
 						elseif ( (($page->post_status == 'wc-on-nas')) AND (in_array('shop_manager', $user->roles)) ) { ?> 
 						    <div class="order_completed">limit access</div>
 						    <div style="width: 50%; ">
@@ -109,7 +112,7 @@ class WC_Meta_Box_Order_Actions {
 						?>
 <!-- Disable post update -> Completed order End  -->														 
 
-				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $order->get_status() ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $order->get_status() ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button> -->
+				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $order->get_status() ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $order->get_status() ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>-->
 			</li>
 
 			<?php
@@ -139,7 +142,7 @@ class WC_Meta_Box_Order_Actions {
 			$trash_order_url = add_query_arg(
 				array(
 					'action'           => 'trash',
-					'order'            => array( $order_id ),
+					'id'            => array( $order_id ),
 					'_wp_http_referer' => $order_list_url,
 				),
 				$order_list_url
