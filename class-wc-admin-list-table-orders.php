@@ -121,7 +121,7 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 		$show_columns['cb']               = $columns['cb'];
 		$show_columns['order_number']     = __( 'Order', 'woocommerce' );
 		$show_columns['order_date']       = __( 'Date', 'woocommerce' );
-		$show_columns['author']			  = __( 'author', 'woocommerce' );
+		$show_columns['author']			  = __( 'author', 'woocommerce' );									 
 		$show_columns['order_status']     = __( 'Status', 'woocommerce' );
 		$show_columns['billing_address']  = __( 'Billing', 'woocommerce' );
 		$show_columns['shipping_address'] = __( 'Ship to', 'woocommerce' );
@@ -146,7 +146,7 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 
 		$actions['mark_processing'] = __( 'Change status to processing', 'woocommerce' );
 		$actions['mark_on-hold']    = __( 'Change status to on-hold', 'woocommerce' );
-		$actions['mark_on-nas']    = __( 'Change status to on-nas', 'woocommerce' );
+		$actions['mark_on-nas']    = __( 'Change status to on-nas', 'woocommerce' );		  
 		$actions['mark_completed']  = __( 'Change status to completed', 'woocommerce' );
 		$actions['mark_cancelled']  = __( 'Change status to cancelled', 'woocommerce' );
 
@@ -227,82 +227,6 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 	 */
 	public function order_preview_template() {
 		echo $this->orders_list_table->get_order_preview_template();
-																						   
-												   
-										   
-																					 
-																	  
-																																	  
-																	  
-																																					  
-																																			
-																																																	 
-				
-			   
-			   
-																																								  
-
-																	  
-																	 
-																																  
-																																		
-
-																																		
-																																 
-																																																																								
-				
-
-																																		
-																																 
-																																																																			
-				
-
-																						  
-																																																						  
-								  
-				
-			  
-																							  
-																	  
-																																	  
-																																	 
-																																				
-						
-																																																																																				
-				 
-
-																							  
-																																																																												   
-																			
-				 
-			   
-			   
-
-																	 
-																  
-																																										  
-																																						
-			   
-			   
-			 
-
-							 
-
-																																							 
-				
-			  
-						  
-								 
-
-																																																																																																																																													
-			 
-			   
-			   
-		  
-		 
-																						   
-		   
-	   
 	}
 
 	/**
@@ -724,11 +648,11 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 	public function search_custom_fields( $wp ) {
 		global $pagenow;
 
-		if ( 'edit.php' !== $pagenow || empty( $wp->query_vars['s'] ) || 'shop_order' !== $wp->query_vars['post_type'] || ! isset( $_GET['s'] ) ) { // phpcs:ignore  WordPress.Security.NonceVerification.Recommended
+		if ( 'edit.php' !== $pagenow || 'shop_order' !== $wp->query_vars['post_type'] ) { // phpcs:ignore  WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
-		$post_ids = wc_order_search( wc_clean( wp_unslash( $_GET['s'] ) ) ); // WPCS: input var ok, sanitization ok.
+		$post_ids = isset( $_GET['s'] ) && ! empty( $wp->query_vars['s'] ) ? wc_order_search( wc_clean( wp_unslash( $_GET['s'] ) ) ) : array(); // phpcs:ignore  WordPress.Security.NonceVerification.Recommended
 
 		if ( ! empty( $post_ids ) ) {
 			// Remove "s" - we don't want to search order name.
@@ -739,6 +663,24 @@ class WC_Admin_List_Table_Orders extends WC_Admin_List_Table {
 
 			// Search by found posts.
 			$wp->query_vars['post__in'] = array_merge( $post_ids, array( 0 ) );
+		}
+
+		if ( isset( $_GET['order_date_type'] ) && isset( $_GET['m'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$date_type  = wc_clean( wp_unslash( $_GET['order_date_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$date_query = wc_clean( wp_unslash( $_GET['m'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// date_paid and date_completed are stored in postmeta, so we need to do a meta query.
+			if ( 'date_paid' === $date_type || 'date_completed' === $date_type ) {
+				$date_start = \DateTime::createFromFormat( 'Ymd H:i:s', "$date_query 00:00:00" );
+				$date_end   = \DateTime::createFromFormat( 'Ymd H:i:s', "$date_query 23:59:59" );
+
+				unset( $wp->query_vars['m'] );
+
+				if ( $date_start && $date_end ) {
+					$wp->query_vars['meta_key']     = "_$date_type"; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+					$wp->query_vars['meta_value']   = array( strval( $date_start->getTimestamp() ), strval( $date_end->getTimestamp() ) ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+					$wp->query_vars['meta_compare'] = 'BETWEEN';
+				}
+			}
 		}
 	}
 }
