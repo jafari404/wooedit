@@ -1,7 +1,6 @@
 <?php
 /**
- * WooCommerce WC_AJAX. AJAX Event Handlers.
- *
+ * WooCommerce WC_AJAX. AJAX Event Handlers
  * @class   WC_AJAX
  * @package WooCommerce\Classes
  */
