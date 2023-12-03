@@ -93,8 +93,9 @@ function wc_get_order( $the_order = false ) {
  * @used-by WC_Order::set_status
  * @return array
  */
-// Order Statuses By User Roles Start_ej										
+																		   
 function wc_get_order_statuses() {
+// Order Statuses By User Roles Start_ej							   
 	$user = wp_get_current_user();
 	if(in_array('shop_manager', $user->roles)){
 		$order_statuses = array(
@@ -104,7 +105,15 @@ function wc_get_order_statuses() {
 			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
 			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),						
 		);
-	}else{	   
+	}else{
+						  
+																			 
+																		
+																	 
+																	   
+																		 
+	
+		   
 	$order_statuses = array(
 		'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
 		'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
@@ -113,13 +122,12 @@ function wc_get_order_statuses() {
 		'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
 		'wc-refunded'   => _x( 'Refunded', 'Order status', 'woocommerce' ),
 		'wc-failed'     => _x( 'Failed', 'Order status', 'woocommerce' ),
-		'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),
+																  
 	);
 	}
-															  
 	return apply_filters( 'wc_order_statuses', $order_statuses );
 }
-// Order Statuses By User Roles END								   
+// Order Statuses By User Roles END
 
 /**
  * See if a string is an order status.
@@ -887,9 +895,22 @@ function wc_order_search( $term ) {
 function wc_update_total_sales_counts( $order_id ) {
 	$order = wc_get_order( $order_id );
 
-	if ( ! $order || $order->get_data_store()->get_recorded_sales( $order ) ) {
+	if ( ! $order ) {
 		return;
 	}
+
+	$recorded_sales  = $order->get_data_store()->get_recorded_sales( $order );
+	$reflected_order = in_array( $order->get_status(), array( 'cancelled', 'trash' ), true );
+
+	if ( ! $reflected_order && 'woocommerce_before_delete_order' === current_action() ) {
+		$reflected_order = true;
+	}
+
+	if ( $recorded_sales xor $reflected_order ) {
+		return;
+	}
+
+	$operation = $recorded_sales && $reflected_order ? 'decrease' : 'increase';
 
 	if ( count( $order->get_items() ) > 0 ) {
 		foreach ( $order->get_items() as $item ) {
@@ -897,12 +918,16 @@ function wc_update_total_sales_counts( $order_id ) {
 
 			if ( $product_id ) {
 				$data_store = WC_Data_Store::load( 'product' );
-				$data_store->update_product_sales( $product_id, absint( $item->get_quantity() ), 'increase' );
+				$data_store->update_product_sales( $product_id, absint( $item->get_quantity() ), $operation );
 			}
 		}
 	}
 
-	$order->get_data_store()->set_recorded_sales( $order, true );
+	if ( 'decrease' === $operation ) {
+		$order->get_data_store()->set_recorded_sales( $order, false );
+	} else {
+		$order->get_data_store()->set_recorded_sales( $order, true );
+	}
 
 	/**
 	 * Called when sales for an order are recorded
@@ -914,6 +939,12 @@ function wc_update_total_sales_counts( $order_id ) {
 add_action( 'woocommerce_order_status_completed', 'wc_update_total_sales_counts' );
 add_action( 'woocommerce_order_status_processing', 'wc_update_total_sales_counts' );
 add_action( 'woocommerce_order_status_on-hold', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_order_status_completed_to_cancelled', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_order_status_processing_to_cancelled', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_order_status_on-hold_to_cancelled', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_trash_order', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_untrash_order', 'wc_update_total_sales_counts' );
+add_action( 'woocommerce_before_delete_order', 'wc_update_total_sales_counts' );
 
 /**
  * Update used coupon amount for each coupon within an order.
