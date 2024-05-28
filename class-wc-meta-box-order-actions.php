@@ -44,6 +44,8 @@ class WC_Meta_Box_Order_Actions {
 			 */
 			do_action( 'woocommerce_order_actions_start', $order_id );
 			?>
+
+
 <!-- Disable Order Actions Start_ej -->
 
 <!-- 			<li class="wide" id="actions">
@@ -55,7 +57,7 @@ class WC_Meta_Box_Order_Actions {
 				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
 			</li> -->
-<!-- Disable Order Actions END -->						  
+<!-- Disable Order Actions END -->
 
 			<li class="wide">
 				<div id="delete-action">
@@ -238,7 +240,7 @@ class WC_Meta_Box_Order_Actions {
 	 */
 	private static function get_available_order_actions_for_order( $order ) {
 		$actions = array(
-			'send_order_details'              => __( 'Email invoice / order details to customer', 'woocommerce' ),
+			'send_order_details'              => __( 'Send order details to customer', 'woocommerce' ),
 			'send_order_details_admin'        => __( 'Resend new order notification', 'woocommerce' ),
 			'regenerate_download_permissions' => __( 'Regenerate download permissions', 'woocommerce' ),
 		);
