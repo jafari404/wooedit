@@ -93,7 +93,6 @@ function wc_get_order( $the_order = false ) {
  * @used-by WC_Order::set_status
  * @return array
  */
-																		   
 function wc_get_order_statuses() {
 // Order Statuses By User Roles Start_ej							   
 	$user = wp_get_current_user();
@@ -106,24 +105,15 @@ function wc_get_order_statuses() {
 			'wc-on-nas'    => _x( 'Nesiye', 'Order status', 'woocommerce' ),						
 		);
 	}else{
-						  
-																			 
-																		
-																	 
-																	   
-																		 
-	
-		   
-	$order_statuses = array(
-		'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
-		'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
-		'wc-on-hold'    => _x( 'On hold', 'Order status', 'woocommerce' ),
-		'wc-completed'  => _x( 'Completed', 'Order status', 'woocommerce' ),
-		'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
-		'wc-refunded'   => _x( 'Refunded', 'Order status', 'woocommerce' ),
-		'wc-failed'     => _x( 'Failed', 'Order status', 'woocommerce' ),
-																  
-	);
+		$order_statuses = array(
+			'wc-pending'    => _x( 'Pending payment', 'Order status', 'woocommerce' ),
+			'wc-processing' => _x( 'Processing', 'Order status', 'woocommerce' ),
+			'wc-on-hold'    => _x( 'On hold', 'Order status', 'woocommerce' ),
+			'wc-completed'  => _x( 'Completed', 'Order status', 'woocommerce' ),
+			'wc-cancelled'  => _x( 'Cancelled', 'Order status', 'woocommerce' ),
+			'wc-refunded'   => _x( 'Refunded', 'Order status', 'woocommerce' ),
+			'wc-failed'     => _x( 'Failed', 'Order status', 'woocommerce' ),
+		);
 	}
 	return apply_filters( 'wc_order_statuses', $order_statuses );
 }
@@ -584,7 +574,7 @@ function wc_create_refund( $args = array() ) {
 		}
 
 		// Negative line items.
-		if ( count( $args['line_items'] ) > 0 ) {
+		if ( is_array( $args['line_items'] ) && count( $args['line_items'] ) > 0 ) {
 			$items = $order->get_items( array( 'line_item', 'fee', 'shipping' ) );
 
 			foreach ( $items as $item_id => $item ) {
