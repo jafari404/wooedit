@@ -8,6 +8,7 @@
  * @version     2.1.0
  */
 
+use Automattic\WooCommerce\Enums\OrderStatus;
 use Automattic\WooCommerce\Internal\Admin\Orders\PageController;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
@@ -46,9 +47,7 @@ class WC_Meta_Box_Order_Actions {
 			?>
 
 
-<!-- Disable Order Actions Start_ej -->
-
-<!-- 			<li class="wide" id="actions">
+			<li class="wide" id="actions">
 				<select name="wc_order_action">
 					<option value=""><?php esc_html_e( 'Choose an action...', 'woocommerce' ); ?></option>
 					<?php foreach ( $order_actions as $action => $title ) { ?>
@@ -56,65 +55,26 @@ class WC_Meta_Box_Order_Actions {
 					<?php } ?>
 				</select>
 				<button class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
-			</li> -->
-<!-- Disable Order Actions END -->
+			</li>
 
 			<li class="wide">
 				<div id="delete-action">
 					<?php
-					//if ( current_user_can( 'delete_post', //$order_id ) ) {
+					if ( current_user_can( 'delete_post', $order_id ) ) {
 
-						//if ( ! EMPTY_TRASH_DAYS ) {
-							//$delete_text = __( 'Delete permanently', 'woocommerce' );
-						//} else {
-							//$delete_text = __( 'Move to Trash', 'woocommerce' );
-						//}
-						?>
-						<!--<a class="submitdelete deletion" href="<?php //echo esc_url( self::get_trash_or_delete_order_link( $order_id ) ); ?>"><?php echo esc_html( $delete_text ); ?></a>-->
-						<?php
-					//}
-					?>
-				</div>
-<!-- Disable post update -> Completed order Start_ej  -->
-				<?php 
-					$current_post_status = get_post_status();
-					//echo $user->roles[0];
-					$page = get_page( $page_id );
-					$user = wp_get_current_user();
-						if (in_array('administrator', $user->roles)) { ?> 
-							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
-							<br>
-							Limit access for other roles
-						<?php }						
-						elseif ($page->post_status == 'wc-completed') { ?> 
-						    <div class="order_completed">limit access</div>
-						<?php }
-						elseif ($page->post_status == 'wc-semicompleted') { ?> 
-						    <div class="order_completed">limit access Change this</div>
-						<?php }
-						elseif ( (($page->post_status == 'wc-on-nas')) AND (in_array('shop_manager', $user->roles)) ) { ?> 
-						    <div class="order_completed">limit access</div>
-						    <div style="width: 50%; ">
-						    	<?php echo $current_post_status; ?>
-						    </div>						    
-						<?php }
-						elseif (in_array('storekeeper', $user->roles)) { ?> 
-						    <div class="order_completed"> مجوز دسترسی ندارید </div>
-						    <div style="width: 50%; ">
-						    	<?php echo $current_post_status; ?>
-						    </div>						    
-						<?php }						
-						else{ ?>
-							<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $post->post_status ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $post->post_status ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button><br>
-						    <div style="width: 50%; ">
-						    	<?php echo $current_post_status; ?>
-						    </div>							
-						<?php
+						if ( ! EMPTY_TRASH_DAYS ) {
+							$delete_text = __( 'Delete permanently', 'woocommerce' );
+						} else {
+							$delete_text = __( 'Move to Trash', 'woocommerce' );
 						}
 						?>
-<!-- Disable post update -> Completed order End  -->														 
+						<a class="submitdelete deletion" href="<?php echo esc_url( self::get_trash_or_delete_order_link( $order_id ) ); ?>"><?php echo esc_html( $delete_text ); ?></a>
+						<?php
+					}
+					?>
+				</div>
 
-				<!--<button type="submit" class="button save_order button-primary" name="save" value="<?php echo 'auto-draft' === $order->get_status() ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo 'auto-draft' === $order->get_status() ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>-->
+				<button type="submit" class="button save_order button-primary" name="save" value="<?php echo OrderStatus::AUTO_DRAFT === $order->get_status() ? esc_attr__( 'Create', 'woocommerce' ) : esc_attr__( 'Update', 'woocommerce' ); ?>"><?php echo OrderStatus::AUTO_DRAFT === $order->get_status() ? esc_html__( 'Create', 'woocommerce' ) : esc_html__( 'Update', 'woocommerce' ); ?></button>
 			</li>
 
 			<?php
@@ -144,7 +104,7 @@ class WC_Meta_Box_Order_Actions {
 			$trash_order_url = add_query_arg(
 				array(
 					'action'           => 'trash',
-					'id'            => array( $order_id ),
+					'id'               => array( $order_id ),
 					'_wp_http_referer' => $order_list_url,
 				),
 				$order_list_url
@@ -172,6 +132,11 @@ class WC_Meta_Box_Order_Actions {
 			$action = wc_clean( wp_unslash( $_POST['wc_order_action'] ) ); // @codingStandardsIgnoreLine
 
 			if ( 'send_order_details' === $action ) {
+				/**
+				 * Fires before an order email is resent.
+				 *
+				 * @since 1.0.0
+				 */
 				do_action( 'woocommerce_before_resend_order_emails', $order, 'customer_invoice' );
 
 				// Send the customer invoice email.
@@ -182,6 +147,11 @@ class WC_Meta_Box_Order_Actions {
 				// Note the event.
 				$order->add_order_note( __( 'Order details manually sent to customer.', 'woocommerce' ), false, true );
 
+				/**
+				 * Fires after an order email has been resent.
+				 *
+				 * @since 1.0.0
+				 */
 				do_action( 'woocommerce_after_resend_order_email', $order, 'customer_invoice' );
 
 				// Change the post saved message.
